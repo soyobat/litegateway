@@ -19,6 +19,9 @@ public class Config {
     private int port = DEFAULT_PORT; // 端口
     private String env = DEFAULT_ENV; // 环境
 
+    private String defaultBufferType = "default";
+    private String parallelBufferType = "parallel";
+
     // 配置中心
     private ConfigCenter configCenter = new ConfigCenter();
 
@@ -28,10 +31,15 @@ public class Config {
     // netty
     private NettyConfig netty = new NettyConfig();
 
+    //disruptor 配置
+    private QueueConfig queueConfig = new QueueConfig();
+
     // http client
     private HttpClientConfig httpClient = new HttpClientConfig();
 
     // 路由配置
     private List<RouteDefinition> routes = new ArrayList<>();
+
+
 
 }

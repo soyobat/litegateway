@@ -28,7 +28,11 @@
             <artifactId>netty-all</artifactId>
             <version>${netty.version}</version>
         </dependency>
-
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>${goooogle.version}</version>
+        </dependency>
     </dependencies>
 
 </project>

@@ -8,4 +8,8 @@ public interface NettyProcessor {
 
     void process(ChannelHandlerContext ctx, FullHttpRequest request);
 
+    void start();
+
+    void stop();
+
 }
