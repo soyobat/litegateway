@@ -31,12 +31,21 @@ public class FilterChain {
         return filters.size();
     }
 
+    /**
+     * 前置过滤
+     * @param index
+     * @param context
+     */
     public void doPreFilter(int index, GatewayContext context) {
         if (index < filters.size() && index >= 0) {
             filters.get(index).doPreFilter(context);
         }
     }
-
+    /**
+     * 后置过滤
+     * @param index
+     * @param context
+     */
     public void doPostFilter(int index, GatewayContext context) {
         if (index < filters.size() && index >= 0) {
             filters.get(index).doPostFilter(context);
