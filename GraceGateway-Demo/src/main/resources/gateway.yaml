@@ -1,7 +1,7 @@
 grace:
   gateway:
     name: gateway-1
-    port: 10000
+    port: 6991
     configCenter:
       enabled: true
       type: NACOS
