@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.grace.gateway.admin.mapper.GatewayStatisticsMapper">
+
+    <!-- 分页查询统计数据 -->
+    <select id="selectPageByQuery" resultType="com.grace.gateway.admin.entity.GatewayStatisticsEntity">
+        SELECT
+            id, gateway_id, gateway_name, route_id, service_name, request_path, request_method,
+            status_code, response_time, request_time, client_ip, user_agent,
+            request_size, response_size, is_success
+        FROM
+            gateway_statistics
+        WHERE
+            1=1
+            <if test="query.gatewayId != null">
+                AND gateway_id = #{query.gatewayId}
+            </if>
+            <if test="query.gatewayName != null and query.gatewayName != ''">
+                AND gateway_name LIKE CONCAT('%', #{query.gatewayName}, '%')
+            </if>
+            <if test="query.startTime != null">
+                AND request_time >= #{query.startTime}
+            </if>
+            <if test="query.endTime != null">
+                AND request_time &lt;= #{query.endTime}
+            </if>
+        ORDER BY
+            request_time DESC
+    </select>
+
+    <!-- 查询指定时间范围内的统计数据 -->
+    <select id="selectByTimeRange" resultType="com.grace.gateway.admin.entity.GatewayStatisticsEntity">
+        SELECT
+            id, gateway_id, gateway_name, route_id, service_name, request_path, request_method,
+            status_code, response_time, request_time, client_ip, user_agent,
+            request_size, response_size, is_success
+        FROM
+            gateway_statistics
+        WHERE
+            1=1
+            <if test="gatewayId != null">
+                AND gateway_id = #{gatewayId}
+            </if>
+            <if test="startTime != null">
+                AND request_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND request_time &lt;= #{endTime}
+            </if>
+        ORDER BY
+            request_time DESC
+    </select>
+
+    <!-- 统计各服务的请求量 -->
+    <select id="statisticsServiceRequestCount" resultType="java.util.Map">
+        SELECT
+            service_name,
+            COUNT(*) AS requestCount
+        FROM
+            gateway_statistics
+        WHERE
+            1=1
+            <if test="gatewayId != null">
+                AND gateway_id = #{gatewayId}
+            </if>
+
+            <if test="startTime != null">
+                AND request_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND request_time &lt;= #{endTime}
+            </if>
+        GROUP BY
+            service_name
+        ORDER BY
+            requestCount DESC
+    </select>
+
+    <!-- 统计各路由的平均响应时间 -->
+    <select id="statisticsRouteAvgResponseTime" resultType="java.util.Map">
+        SELECT
+            service_name,
+            route_id,
+            AVG(response_time) AS avgResponseTime,
+            MAX(response_time) AS maxResponseTime,
+            MIN(response_time) AS minResponseTime,
+            COUNT(*) AS requestCount
+        FROM
+            gateway_statistics
+        WHERE
+            1=1
+            <if test="gatewayId != null">
+                AND gateway_id = #{gatewayId}
+            </if>
+
+            <if test="startTime != null">
+                AND request_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND request_time &lt;= #{endTime}
+            </if>
+        GROUP BY
+            service_name, route_id
+        ORDER BY
+            avgResponseTime DESC
+    </select>
+
+    <!-- 统计各状态码的数量 -->
+    <select id="statisticsStatusCodeCount" resultType="java.util.Map">
+        SELECT
+            status_code,
+            COUNT(*) AS count
+        FROM
+            gateway_statistics
+        WHERE
+            1=1
+            <if test="gatewayId != null">
+                AND gateway_id = #{gatewayId}
+            </if>
+
+            <if test="startTime != null">
+                AND request_time >= #{startTime}
+            </if>
+            <if test="endTime != null">
+                AND request_time &lt;= #{endTime}
+            </if>
+        GROUP BY
+            status_code
+        ORDER BY
+            count DESC
+    </select>
+
+    <!-- 统计时间范围内的请求量趋势 -->
+    <select id="statisticsRequestTrend" resultType="java.util.Map">
+        <choose>
+            <when test="interval == 'hour'">
+                SELECT
+                    DATE_FORMAT(request_time, '%Y-%m-%d %H') AS time,
+                    COUNT(*) AS count,
+                    SUM(CASE WHEN is_success = 1 THEN 1 ELSE 0 END) AS successCount,
+                    SUM(CASE WHEN is_success = 0 THEN 1 ELSE 0 END) AS failedCount
+                FROM
+                    gateway_statistics
+                WHERE
+                    1=1
+                    <if test="gatewayId != null">
+                        AND gateway_id = #{gatewayId}
+                    </if>
+                    <if test="gatewayName != null and gatewayName != ''">
+                        AND gateway_name LIKE CONCAT('%', #{gatewayName}, '%')
+                    </if>
+                    <if test="startTime != null">
+                        AND request_time >= #{startTime}
+                    </if>
+                    <if test="endTime != null">
+                        AND request_time &lt;= #{endTime}
+                    </if>
+                GROUP BY
+                    DATE_FORMAT(request_time, '%Y-%m-%d %H')
+                ORDER BY
+                    time
+            </when>
+            <when test="interval == 'day'">
+                SELECT
+                    DATE_FORMAT(request_time, '%Y-%m-%d') AS time,
+                    COUNT(*) AS count,
+                    SUM(CASE WHEN is_success = 1 THEN 1 ELSE 0 END) AS successCount,
+                    SUM(CASE WHEN is_success = 0 THEN 1 ELSE 0 END) AS failedCount
+                FROM
+                    gateway_statistics
+                WHERE
+                    1=1
+                    <if test="gatewayId != null">
+                        AND gateway_id = #{gatewayId}
+                    </if>
+                    <if test="gatewayName != null and gatewayName != ''">
+                        AND gateway_name LIKE CONCAT('%', #{gatewayName}, '%')
+                    </if>
+                    <if test="startTime != null">
+                        AND request_time >= #{startTime}
+                    </if>
+                    <if test="endTime != null">
+                        AND request_time &lt;= #{endTime}
+                    </if>
+                GROUP BY
+                    DATE_FORMAT(request_time, '%Y-%m-%d')
+                ORDER BY
+                    time
+            </when>
+            <otherwise>
+                SELECT
+                    DATE_FORMAT(request_time, '%Y-%m-%d') AS time,
+                    COUNT(*) AS count,
+                    SUM(CASE WHEN is_success = 1 THEN 1 ELSE 0 END) AS successCount,
+                    SUM(CASE WHEN is_success = 0 THEN 1 ELSE 0 END) AS failedCount
+                FROM
+                    gateway_statistics
+                WHERE
+                    1=1
+                    <if test="gatewayId != null">
+                        AND gateway_id = #{gatewayId}
+                    </if>
+                    <if test="gatewayName != null and gatewayName != ''">
+                        AND gateway_name LIKE CONCAT('%', #{gatewayName}, '%')
+                    </if>
+                    <if test="startTime != null">
+                        AND request_time >= #{startTime}
+                    </if>
+                    <if test="endTime != null">
+                        AND request_time &lt;= #{endTime}
+                    </if>
+                GROUP BY
+                    DATE_FORMAT(request_time, '%Y-%m-%d')
+                ORDER BY
+                    time
+            </otherwise>
+        </choose>
+    </select>
+
+</mapper>

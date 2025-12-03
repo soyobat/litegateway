@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.grace.gateway.admin.mapper.UserMapper">
+
+    <!-- 根据用户名查询用户 -->
+    <select id="selectByUsername" resultType="com.grace.gateway.admin.entity.UserEntity">
+        SELECT
+            id, username, password, nickname, email, phone, role, status, 
+            create_time, update_time, is_deleted
+        FROM
+            user
+        WHERE
+            username = #{username}
+            AND is_deleted = 0
+    </select>
+
+</mapper>

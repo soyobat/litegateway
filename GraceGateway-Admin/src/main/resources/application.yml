@@ -1,0 +1,96 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: grace-gateway-admin
+  config:
+    import: "optional:nacos:grace-gateway-admin.yml"
+  mvc:
+    format:
+      date: yyyy-MM-dd
+      date-time: yyyy-MM-dd HH:mm:ss
+      time: HH:mm:ss
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+        username: nacos
+        password: nacos
+      config:
+        server-addr: 127.0.0.1:8848
+        file-extension: yml
+        username: nacos
+        password: nacos
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/grace_gateway?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=UTC
+    username: root
+    password: lklFuFu
+  redis:
+    host: localhost
+    port: 6379
+    #password:
+    database: 0
+
+# MyBatis Plus配置
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: false
+    call-setters-on-nulls: true
+    jdbc-type-for-null: 'null'
+  global-config:
+    db-config:
+      id-type: AUTO
+      logic-delete-field: isDeleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:mapper/*.xml
+
+# 日志配置
+logging:
+  level:
+    com.grace.gateway.admin: debug
+    org.springframework.security: debug
+
+# JWT配置
+jwt:
+  secret: grace-gateway-admin-secret-key-should-be-at-least-512-bits-long-for-HS512-algorithm-security-requirements-according-to-JWT-specification-RFC-7518
+  expiration: 86400000 # 24小时
+
+# Knife4j配置
+knife4j:
+  enable: true
+  setting:
+    language: zh-CN
+    enable-swagger-models: true
+    enable-document-manage: true
+    swagger-model-name: 实体类列表
+    enable-version: false
+    enable-reload-cache-parameter: false
+    enable-after-script: true
+    enable-filter-multipart-api-method-type: POST
+    enable-filter-multipart-apis: false
+    enable-request-cache: true
+    enable-host: false
+    enable-host-text: localhost:8080
+    enable-home-custom: false
+    home-custom-path: classpath:markdown/home.md
+    enable-search: true
+    enable-footer: false
+    enable-footer-custom: true
+    footer-custom-content: Copyright © 2023 GraceGateway
+    enable-dynamic-parameter: false
+    enable-debug: true
+    enable-open-api: true
+    enable-group: true
+  cors: false
+  production: false
+  basic:
+    enable: false
+    username: admin
+    password: 123456
