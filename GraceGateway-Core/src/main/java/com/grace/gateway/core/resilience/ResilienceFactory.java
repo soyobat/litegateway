@@ -78,6 +78,7 @@ public class ResilienceFactory {
                 DynamicConfigManager.getInstance().addRouteListener(serviceName, newRoute -> bulkheadMap.remove(newRoute.getServiceName()));
                 bulkheadSet.add(serviceName);
             }
+            //为什么信号量隔离可以设置最大等待响应时间 ? 想错了，这个是 获取不到时的 等待时间
             BulkheadConfig bulkheadConfig = BulkheadConfig.custom()
                     .maxConcurrentCalls(resilienceConfig.getMaxConcurrentCalls())
                     .maxWaitDuration(Duration.ofMillis(resilienceConfig.getMaxWaitDuration()))

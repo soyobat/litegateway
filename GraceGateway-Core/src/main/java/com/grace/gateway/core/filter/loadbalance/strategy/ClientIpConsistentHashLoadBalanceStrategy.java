@@ -23,6 +23,7 @@ public class ClientIpConsistentHashLoadBalanceStrategy implements LoadBalanceStr
 
         List<String> nodes = instances.stream().map(ServiceInstance::getInstanceId).toList();
         ConsistentHashing consistentHashing = new ConsistentHashing(nodes, virtualNodeNum);
+        //对 IP:port 做hash(hash算法：对hashcode做了一些增强)
         String selectedNode = consistentHashing.getNode(String.valueOf(context.getRequest().getHost().hashCode()));
 
         for (ServiceInstance instance : instances) {

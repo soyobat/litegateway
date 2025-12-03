@@ -26,16 +26,36 @@ public class ConsistentHashing {
         }
     }
 
+    /**
+     * 给定一个 key 的 hash，比如 keyHash = 55，我们要找：
+     * 顺时针方向第一个 hash ≥ 55 的节点 → "NodeC"
+     * 如果 keyHash = 90（大于最大节点 hash 80） → 环绕回 "NodeA"
+     * @param key
+     * @return
+     */
     public String getNode(String key) {
         if (hashCircle.isEmpty()) {
             return null;
         }
         int hash = getHash(key);
+        //返回一个 视图（view），包含所有 key ≥ fromKey 的条目。
         SortedMap<Integer, String> tailMap = hashCircle.tailMap(hash);
+        //如果这个view不存在，就返回环的头个节点。
         Integer nodeHash = tailMap.isEmpty() ? hashCircle.firstKey() : tailMap.firstKey();
         return hashCircle.get(nodeHash);
     }
 
+    /**
+     * 基础算法：FNV-1a 32位哈希
+     *
+     * 增强混合：通过移位、异或和加法增加哈希分布均匀性
+     * 用途：
+     * 哈希表索引
+     * 布隆过滤器
+     * 分布式一致性哈希（配合取模或环）
+     * @param str
+     * @return
+     */
     private int getHash(String str) {
         final int p = 16777619;
         int hash = (int) 2166136261L;

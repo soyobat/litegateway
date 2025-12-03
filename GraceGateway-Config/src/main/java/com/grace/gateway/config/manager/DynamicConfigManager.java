@@ -13,6 +13,26 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * 动态配置管理，缓存从配置中心拉取下来的配置
+ *
+ * DynamicConfigManager是GraceGateway的动态配置管理器，主要实现如下：
+ *
+ *   1. 单例模式：使用静态实例确保全局唯一性
+ *   2. 数据存储：使用多个ConcurrentHashMap存储不同维度的配置数据
+ *     - routeId2RouteMap：路由ID到路由定义的映射
+ *     - serviceName2RouteMap：服务名到路由定义的映射
+ *     - uri2RouteMap：URI路径到路由定义的映射
+ *     - serviceDefinitionMap：服务定义映射
+ *     - serviceInstanceMap：服务实例映射
+ *   3. 核心功能：
+ *     - 路由管理：更新、查询路由配置
+ *     - 服务管理：更新、查询服务定义
+ *     - 实例管理：添加、更新、删除服务实例
+ *     - 监听机制：支持路由变化监听器
+ *   4. 线程安全：使用ConcurrentHashMap和CopyOnWriteArrayList确保并发安全
+ *   5. 动态更新：提供批量更新接口支持配置的动态变更
+ *
+ *   该管理器作为配置中心与网关核心的桥梁，维护运行时配置状态。
+ *
  */
 public class DynamicConfigManager {
 
@@ -109,6 +129,10 @@ public class DynamicConfigManager {
     }
 
     /*********   监听   *********/
+    /**
+     * @param serviceName
+     * @param listener
+     */
     public void addRouteListener(String serviceName, RouteListener listener) {
         routeListenerMap.computeIfAbsent(serviceName, key -> new CopyOnWriteArrayList<>()).add(listener);
     }

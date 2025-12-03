@@ -49,6 +49,7 @@ public class Bootstrap {
             return new RuntimeException("not found ConfigCenter impl");
         });
         configCenterProcessor.init(config.getConfigCenter());
+        //订阅路由变化
         configCenterProcessor.subscribeRoutesChange(newRoutes -> {
             DynamicConfigManager.getInstance().updateRoutes(newRoutes, true);
             for (RouteDefinition newRoute : newRoutes) {

@@ -28,6 +28,7 @@ public class NettyCoreProcessor implements NettyProcessor {
             gatewayContext.doFilter();
 
         } catch (GatewayException e) {
+            //报错处理，像NotFoundException....这些继承了GatewayException，只要抛了异常就会被这里捕获到，然后塞到返回请求里，重新返回回去
             log.error("处理错误 {} {}", e.getCode(), e.getCode().getMessage());
             FullHttpResponse httpResponse = ResponseHelper.buildHttpResponse(e.getCode());
             doWriteAndRelease(ctx, request, httpResponse);

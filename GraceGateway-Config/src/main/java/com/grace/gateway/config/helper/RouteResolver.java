@@ -15,6 +15,19 @@ public class RouteResolver {
     /**
      * 根据uri解析出对应的路由
      */
+    /**
+     * 把所有路由模式转成正则
+     *
+     * 找出所有匹配请求 URI 的路由
+     *
+     * 如果没有匹配 → 抛 404 异常
+     *
+     * 如果有多个匹配 → 按 order 和 URI 长度选出最优一个
+     *
+     * 返回最优匹配的 RouteDefinition
+     * @param uri
+     * @return
+     */
     public static RouteDefinition matchingRouteByUri(String uri) {
         Set<Map.Entry<String, RouteDefinition>> allUriEntry = manager.getAllUriEntry();
 

@@ -12,8 +12,8 @@ import lombok.Data;
 
 /**
  * 客户端请求 → Boss线程(接受连接) → Worker线程(读取请求) → Disruptor队列 → Disruptor工作线程(处理业务) → Worker线程(发送响应)
- * ↑                                                               ↓
- * (事件发布后worker线程立即返回)                                 (通过ChannelHandlerContext发送响应)
+ *                                  ↑                                                            ↓
+ *                  (事件发布后worker线程立即返回)                                 (通过ChannelHandlerContext发送响应)
  *
  * 关键点说明
  * 1. Worker线程在Disruptor处理完成后发送响应：这是正确的
@@ -37,6 +37,7 @@ import lombok.Data;
  *
  * 为什么不默认开启
  * - CPU开销：额外的线程池和事件处理机制
+ *
  * - 复杂性成本：增加了系统资源管理的复杂度
  *
  * 2. 适用场景限制

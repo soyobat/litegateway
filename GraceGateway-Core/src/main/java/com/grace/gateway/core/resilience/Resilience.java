@@ -1,6 +1,5 @@
 package com.grace.gateway.core.resilience;
 
-
 import com.grace.gateway.common.enums.ResilienceEnum;
 import com.grace.gateway.common.enums.ResponseCode;
 import com.grace.gateway.config.pojo.RouteDefinition;
@@ -18,7 +17,6 @@ import org.asynchttpclient.Response;
 
 import java.util.concurrent.*;
 import java.util.function.Supplier;
-
 
 public class Resilience {
 
@@ -51,15 +49,23 @@ public class Resilience {
                     if (resilienceConfig.isFallbackEnabled()) {
                         Supplier<CompletionStage<Response>> finalSupplier = supplier;
                         supplier = () ->
-                                finalSupplier.get().exceptionally(throwable -> {
-                                    FallbackHandler handler = FallbackHandlerManager.getHandler(resilienceConfig.getFallbackHandlerName());
-                                    handler.handle(throwable, gatewayContext);
-                                    return null;
-                                });
+                            finalSupplier.get().exceptionally(throwable -> {
+                                FallbackHandler handler = FallbackHandlerManager.getHandler(
+                                    resilienceConfig.getFallbackHandlerName());
+                                handler.handle(throwable, gatewayContext);
+                                return null;
+                            });
                     }
                 }
+                /**
+                 * resilence 的熔断器三个状态
+                 * 当执行时：
+                 * 如果是 CLOSED 或 HALF_OPEN（允许测试请求） ⇒ 正常执行
+                 * 如果是 OPEN ⇒ 直接拒绝执行并抛出 CallNotPermittedException
+                 */
                 case CIRCUITBREAKER -> {
-                    CircuitBreaker circuitBreaker = ResilienceFactory.buildCircuitBreaker(resilienceConfig, serviceName);
+                    CircuitBreaker circuitBreaker = ResilienceFactory.buildCircuitBreaker(resilienceConfig,
+                        serviceName);
                     if (circuitBreaker != null) {
                         supplier = CircuitBreaker.decorateCompletionStage(circuitBreaker, supplier);
                     }
@@ -71,15 +77,22 @@ public class Resilience {
                     }
                 }
                 case THREADPOOLBULKHEAD -> {
-                    ThreadPoolBulkhead threadPoolBulkhead = ResilienceFactory.buildThreadPoolBulkhead(resilienceConfig, serviceName);
+                    ThreadPoolBulkhead threadPoolBulkhead = ResilienceFactory.buildThreadPoolBulkhead(resilienceConfig,
+                        serviceName);
                     if (threadPoolBulkhead != null) {
                         Supplier<CompletionStage<Response>> finalSupplier = supplier;
                         supplier = () -> {
                             CompletionStage<CompletableFuture<Response>> future =
-                                    threadPoolBulkhead.executeSupplier(() -> finalSupplier.get().toCompletableFuture());
+                                threadPoolBulkhead.executeSupplier(() -> finalSupplier.get().toCompletableFuture());
                             try {
-                                return future.toCompletableFuture().get();
+                                //处理下游超时问题，针对每个接口粒度 都有超时时间。但感觉这个设定跟retry功能一样了
+                                return future.toCompletableFuture().get(100, TimeUnit.MILLISECONDS);
+                                //return future.toCompletableFuture().get();
                             } catch (InterruptedException | ExecutionException e) {
+                                throw new RuntimeException(e);
+                            } catch (TimeoutException e) {
+                                //下游超时后 尝试中断
+                                future.toCompletableFuture().cancel(true); // 尝试中断线程池线程
                                 throw new RuntimeException(e);
                             }
                         };
